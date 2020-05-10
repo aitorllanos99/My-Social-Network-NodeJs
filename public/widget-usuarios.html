@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Social Network - Api - Users</title>
+</head>
+<body>
+<div id="widget-amigos">
+    <input type="text" class="form-control" placeholder="Filtrar por nombre" id="filtro-nombre"/>
+    <button class="btn" onclick="cargarAmigos()">Actualizar</button>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th><a onclick="ordenarPorEmail()">Email</a></th>
+            <th><a onclick="ordenarPorNombre()">Nombre</a></th>
+            <th><a onclick="ordenarPorApellido()">Apellidos</a></th>
+            <th class="col-md-1"></th>
+        </tr>
+        </thead>
+        <tbody id="tablaCuerpo"></tbody>
+    </table>
+</div>
+<script>
+    window.history.pushState("", "", "/cliente.html?w=amigos");
+    var amigos;
+
+    function cargarAmigos() {
+        $.ajax({
+            url: URLbase + "/api/listFriends",
+            type: "GET",
+            data: {},
+            dataType: 'json',
+            headers: {"token": token},
+            success: function (respuesta) {
+                amigos = respuesta;
+                actualizarTabla(amigos);
+            },
+            error: function (error) {
+                $("#div-errores").show();
+                $("#div-errores").text("Error: " + error.responseJSON.error);
+            }
+        });
+    }
+
+    function actualizarTabla(amigos) {
+        $("#tablaCuerpo").empty(); // Vaciar la tabla
+        for (i = 0; i < amigos.length; i++) {
+            $("#tablaCuerpo").append(
+                "<tr id=" + amigos[i].email + ">" +
+                "<td>" + amigos[i].emailFrom + "</td>" +
+                "<td>" + amigos[i].nombreFrom + "</td>" +
+                "<td>" + amigos[i].apellidoFrom + "</td>" +
+                "</tr>");
+        }
+    }
+
+    $('#filtro-nombre').on('input', function (e) {
+        var usuariosFiltrados = [];
+        var nombreFiltro = $("#filtro-nombre").val();
+        for (i = 0; i < amigos.length; i++) {
+            if (amigos[i].nombreFrom.indexOf(nombreFiltro) != -1) {
+                usuariosFiltrados.push(amigos[i]);
+            }
+        }
+        actualizarTabla(usuariosFiltrados);
+    });
+
+
+    cargarAmigos();
+
+    function ordenarPorNombre() {
+        amigos.sort(function (a, b) {
+            if (a.nombre > b.nombre) return 1;
+            if (a.nombre < b.nombre) return -1;
+            return 0;
+        });
+        actualizarTabla(amigos);
+    }
+
+    function ordenarPorApellido() {
+        amigos.sort(function (a, b) {
+            if (a.apellido > b.apellido) return 1;
+            if (a.apellido < b.apellido) return -1;
+            return 0;
+        });
+        actualizarTabla(amigos);
+    }
+
+
+    function ordenarPorEmail() {
+        amigos.sort(function (a, b) {
+            if (a.email > b.email) return 1;
+            if (a.email < b.email) return -1;
+            return 0;
+        });
+        actualizarTabla(amigos);
+    }
+
+</script>
+</body>
+</html>
