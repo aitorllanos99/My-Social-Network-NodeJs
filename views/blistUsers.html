@@ -30,7 +30,7 @@
                 <div class="wrap">{{ user.nombre }}</div>
                 <div class="small"> {{ user.apellido }}</div>
                 <div class="text-right">{{ user.email }}</div>
-               {% if user.allowed %} <button><a href="/sendPetition/{{user.email}}">Agregar Amigo</a></button> {% endif %}
+               {% if user.allowed %} <button id = "btn{{user.email}}"><a href="/sendPetition/{{user.email}}">Agregar Amigo</a></button> {% endif %}
             </a>
         </div>
     </div>

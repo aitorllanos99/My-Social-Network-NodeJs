@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Social Network - Jquery chat</title>
+</head>
+<body>
+<div id="widget-detalles">
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>Para</th>
+            <th>De</th>
+            <th>Texto</th>
+            <th class="col-md-1"></th>
+        </tr>
+        </thead>
+        <tbody id="tablaCuerpo"></tbody>
+    </table>
+    <div>
+        <h2>Enviar Mensaje</h2>
+        <div class="form-group">
+            <label class="control-label col-sm-2" for="agregar-texto">Contenido</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" name="texto" placeholder="Que mensaje envias"
+                       id="agregar-texto"/>
+            </div>
+        </div>
+        <div class="col-sm-offset-2 col-sm-10">
+            <button type="button" class="btn btn-primary" id="boton-enviarMensaje" name="enviar" onclick="enviarMensaje()">Enviar Mensaje</button>
+        </div>
+    </div>
+    <button onclick="widgetAmigos()" class="btn">Volver</button>
+</div>
+<script>
+    var mensajes;
+
+    function cargarMensajes() {
+        $.ajax({
+            url: URLbase + "/verMensajes/" + emailSeleccionado,
+            type: "GET",
+            data: {},
+            dataType: 'json',
+            headers: {
+                "token": token
+            },
+            success: function (respuesta) {
+                mensajes = respuesta;
+                actualizarTabla(mensajes);
+            },
+            error: function (error) {
+                $("#div-errores").show();
+                $("#div-errores").text("Error: " + error.responseJSON.error);
+            }
+        });
+    }
+
+    function actualizarTabla(mensajes) {
+        $("#tablaCuerpo").empty(); // Vaciar la tabla
+        for (i = 0; i < mensajes.length; i++) {
+            $("#tablaCuerpo").append(
+                "<tr id=" + mensajes[i].de + ">" +
+                "<td>" + mensajes[i].de + "</td>" +
+                "<td>" + mensajes[i].para + "</td>" +
+                "<td>" + mensajes[i].texto + "</td>" +
+                "</tr>");
+
+        }
+    }
+
+    cargarMensajes();
+    setInterval(cargarMensajes, 5000);
+    function enviarMensaje() {
+        $.ajax({
+            url: URLbase + "/crearMensaje/"+emailSeleccionado,
+            type: "POST",
+            data: {
+                texto: $("#agregar-texto").val(),
+            },
+            dataType: 'json',
+            headers: {"token": token},
+            success: function (respuesta) {
+                console.log(respuesta); // <-- Prueba
+                $("#contenedor-principal").load("widget-mensajes.html");
+            }, error: function (error) {
+                $("#div-errores").show();
+                $("#div-errores").text("Error: " + error.responseJSON.error);
+            }
+        });
+    }
+</script>
+</body>
+</html>

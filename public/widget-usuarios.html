@@ -6,14 +6,15 @@
 </head>
 <body>
 <div id="widget-amigos">
-    <input type="text" class="form-control" placeholder="Filtrar por nombre" id="filtro-nombre"/>
+    <input type="text" class="search-query form-control"
+           placeholder="Nombre del usuario" name="busqueda"/>
     <button class="btn" onclick="cargarAmigos()">Actualizar</button>
     <table class="table table-hover">
         <thead>
         <tr>
-            <th><a onclick="ordenarPorEmail()">Email</a></th>
-            <th><a onclick="ordenarPorNombre()">Nombre</a></th>
-            <th><a onclick="ordenarPorApellido()">Apellidos</a></th>
+            <th>Email</th>
+            <th>Nombre</th>
+            <th>Apellidos</th>
             <th class="col-md-1"></th>
         </tr>
         </thead>
@@ -26,7 +27,7 @@
 
     function cargarAmigos() {
         $.ajax({
-            url: URLbase + "/api/listFriends",
+            url: URLbase + "/listFriends",
             type: "GET",
             data: {},
             dataType: 'json',
@@ -43,14 +44,30 @@
     }
 
     function actualizarTabla(amigos) {
+         let userSession  = Cookies.get('user');
         $("#tablaCuerpo").empty(); // Vaciar la tabla
         for (i = 0; i < amigos.length; i++) {
-            $("#tablaCuerpo").append(
-                "<tr id=" + amigos[i].email + ">" +
-                "<td>" + amigos[i].emailFrom + "</td>" +
-                "<td>" + amigos[i].nombreFrom + "</td>" +
-                "<td>" + amigos[i].apellidoFrom + "</td>" +
-                "</tr>");
+            let linkId = "";
+            if(userSession == amigos[i].emailFrom){
+               linkId =  "btn" + amigos[i].emailTo;
+                $("#tablaCuerpo").append(
+                    "<tr id=" + amigos[i].emailTo + ">" +
+                    "<td>" + amigos[i].emailTo + "</td>" +
+                    "<td>" + amigos[i].nombreTo + "</td>" +
+                    "<td>" + amigos[i].apellidoTo + "</td>" +
+                    "<td>" + "<a onclick=verMensajes('" + amigos[i].emailTo + "') id= "+ linkId + ">Ver Mensajes</a><br>" + "</td>" +
+                    "</tr>");
+            }else{
+                linkId =  "btn" + amigos[i].emailFrom;
+                $("#tablaCuerpo").append(
+                    "<tr id=" + amigos[i].emailFrom + ">" +
+                    "<td>" + amigos[i].emailFrom + "</td>" +
+                    "<td>" + amigos[i].nombreFrom + "</td>" +
+                    "<td>" + amigos[i].apellidoFrom + "</td>" +
+                    "<td>" + "<a onclick=verMensajes('" + amigos[i].emailFrom + "') id= "+ linkId + ">Ver Mensajes</a><br>" + "</td>" +
+                    "</tr>");
+            }
+
         }
     }
 
@@ -67,33 +84,9 @@
 
 
     cargarAmigos();
-
-    function ordenarPorNombre() {
-        amigos.sort(function (a, b) {
-            if (a.nombre > b.nombre) return 1;
-            if (a.nombre < b.nombre) return -1;
-            return 0;
-        });
-        actualizarTabla(amigos);
-    }
-
-    function ordenarPorApellido() {
-        amigos.sort(function (a, b) {
-            if (a.apellido > b.apellido) return 1;
-            if (a.apellido < b.apellido) return -1;
-            return 0;
-        });
-        actualizarTabla(amigos);
-    }
-
-
-    function ordenarPorEmail() {
-        amigos.sort(function (a, b) {
-            if (a.email > b.email) return 1;
-            if (a.email < b.email) return -1;
-            return 0;
-        });
-        actualizarTabla(amigos);
+    function verMensajes(email) {
+        emailSeleccionado = email;
+        $("#contenedor-principal").load("widget-mensajes.html");
     }
 
 </script>

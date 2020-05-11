@@ -24,21 +24,22 @@
             <img src="/img/logo.png" alt="logo"/>
         </div>
         <div class="collapse navbar-collapse" id="myNavbar">
-            <ul class="nav navbar-nav">
-                <li id="mListUsers"><a href="/listUsers">Usuarios</a></li>
-                <li id="listFriendPetition"><a href="/listFriendPetition">Ver Peticiones de Amistad</a></li>
-                <li id="mListFriends"><a href="/listFriends">Amigos</a></li>
-            </ul>
             {% block user %}
+            <ul class="nav navbar-nav">
+                {% if user != null %}  <li id="mListUsers"><a href="/listUsers">Usuarios</a></li> {% endif %}
+                {% if user != null %}<li id="listFriendPetition"><a href="/listFriendPetition">Ver Peticiones de Amistad</a></li>{% endif %}
+                {% if user != null %}<li id="mListFriends"><a href="/listFriends">Amigos</a></li>{% endif %}
+            </ul>
+
             <ul class="nav navbar-nav navbar-right">
                 {% if user == null %}
-                <li><a href="/registrarse"><span class="glyphicon glyphicon-user"></span> Registrate </a></li>
+                <li><a href="/registrarse"><span class="glyphicon glyphicon-user"></span>Registrate </a></li>
                 {% endif %}
                 {% if user == null %}
-                <li><a href="/identificarse"><span class="glyphicon glyphicon-log-in"></span> Identifícate</a>
+                <li><a href="/identificarse"><span class="glyphicon glyphicon-log-in"></span>Identifícate</a>
                     {%endif %}
                     {% if user != null %}
-                <li><a href="/desconectarse"><span class="glyphicon glyphicon-log-in"></span> Desconectarse</a></li>
+                <li><a href="/desconectarse"><span class="glyphicon glyphicon-log-out"></span>Desconectarse</a></li>
                 {% endif %}
                 </li>
             </ul>

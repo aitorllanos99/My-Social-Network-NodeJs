@@ -20,6 +20,38 @@ module.exports = function (app, swig, gestorBD) {
         });
     });
 
+    app.post("/api/crearMensaje/:email", function (req, res) {
+        var mensaje = {
+            de: res.usuario,
+            para: req.params.email,
+            texto: req.body.texto,
+            leido: false
+        }
+        // Validar parametros
+        if (mensaje.de == null || mensaje.texto == "" ||
+            mensaje.de == "" || mensaje.texto == null) {
+            res.status(400);
+            app.get('logger').error('Datos Incorrectos - REST');
+            res.json({
+                error: "datos incorrectos"
+            });
+        } else {
+            gestorBD.insertarMensaje(mensaje, function (id) {
+                if (id == null) {
+                    res.status(500);
+                    res.json({
+                        error: "se ha producido un error"
+                    });
+                } else {
+                    res.status(201);
+                    res.json({
+                        mensaje: "Mensaje insertado",
+                        _id: id
+                    });
+                }
+            });
+        }
+    });
     app.post("/api/crearMensaje", function (req, res) {
         var mensaje = {
             de: res.usuario,
@@ -51,7 +83,6 @@ module.exports = function (app, swig, gestorBD) {
             });
         }
     });
-
     app.post("/api/identificate", function (req, res) {
         let seguro = app.get("crypto").createHmac('sha256', app.get('clave'))
             .update(req.body.password).digest('hex');
@@ -95,7 +126,37 @@ module.exports = function (app, swig, gestorBD) {
             }
         });
     });
+    app.get("/api/verMensajes/:email", function (req, res) {
+        {
+            let criterio = {
+                    $or: [
+                        {
+                            $and: [
+                                {"de": res.usuario},
+                                {"para": req.params.email},
+                            ]
+                        },
+                        {
+                            $and: [
+                                {"de": req.params.email},
+                                {"para": res.usuario}
+                            ]
+                        }
+                    ]
+                }
+            ;
+            gestorBD.obtenerMensaje(criterio, function (mensajes) {
+                if (mensajes == null) {
+                    res.status(501);
+                    res.json({error: "Se ha producido un error listando los mensajes"})
+                } else {
+                    res.status(201);
+                    res.send(JSON.stringify(mensajes));
+                }
+            });
+        }
 
+    });
     app.put("/api/leerMensaje/:id", function (req, res) {
         var criterio = {"_id": gestorBD.mongo.ObjectID(req.params.id)};
         let mensaje ={};

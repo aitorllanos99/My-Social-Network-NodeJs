@@ -144,7 +144,7 @@ module.exports = {
             } else {
                 let collection = db.collection('usuarios');
                 collection.count(function (err, count) {
-                    collection.find(criterio).skip((pg - 1) * 4).limit(4).toArray(function (err, users) {
+                    collection.find(criterio).skip((pg - 1) * 6).limit(6).toArray(function (err, users) {
                         if (err) {
                             funcionCallback(null);
                         } else {
@@ -162,7 +162,7 @@ module.exports = {
             } else {
                 let collection = db.collection('amigos');
                 collection.count(function (err, count) {
-                    collection.find(criterio).skip((pg - 1) * 4).limit(4).toArray(function (err, friends) {
+                    collection.find(criterio).skip((pg - 1) * 6).limit(6).toArray(function (err, friends) {
                         if (err) {
                             funcionCallback(null);
                         } else {
@@ -181,7 +181,7 @@ module.exports = {
             } else {
                 let collection = db.collection('peticionesAmistad');
                 collection.count(function (err, count) {
-                    collection.find(criterio).skip((pg - 1) * 4).limit(4).toArray(function (err, friendPetitions) {
+                    collection.find(criterio).skip((pg - 1) * 6).limit(6).toArray(function (err, friendPetitions) {
                         if (err) {
                             funcionCallback(null);
                         } else {
@@ -209,23 +209,7 @@ module.exports = {
                 });
             }
         });
-    }, modificarCancion: function (criterio, cancion, funcionCallback) {
-        this.mongo.MongoClient.connect(this.app.get('db'), function (err, db) {
-            if (err) {
-                funcionCallback(null);
-            } else {
-                let collection = db.collection('canciones');
-                collection.update(criterio, {$set: cancion}, function (err, result) {
-                    if (err) {
-                        funcionCallback(null);
-                    } else {
-                        funcionCallback(result);
-                    }
-                    db.close();
-                });
-            }
-        });
-    }, insertarUsuario: function (usuario, funcionCallback) {
+    },  insertarUsuario: function (usuario, funcionCallback) {
         this.mongo.MongoClient.connect(this.app.get('db'), function (err, db) {
             if (err) {
                 funcionCallback(null);

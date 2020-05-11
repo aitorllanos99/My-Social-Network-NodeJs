@@ -21,16 +21,19 @@ routerUsuarioToken.use(function (req, res, next) { // obtener el token, vía hea
         jwt.verify(token, 'secreto', function (err, infoToken) {
             if (err || (Date.now() / 1000 - infoToken.tiempo) > 240) {
                 res.status(403); // Forbidden
+                app.get('logger').error('Intento de acceso con Token invalido o caducado - REST');
                 res.json({acceso: false, error: 'Token invalido o caducado'});
                 // También podríamos comprobar que intoToken.usuario existe
                 return;
             } else { // dejamos correr la petición
                 res.usuario = infoToken.usuario;
+                app.get('logger').info('Acceso adecuado - REST');
                 next();
             }
         });
     } else {
         res.status(403); // Forbidden
+        app.get('logger').error('Intento de acceso sin token - REST');
         res.json({acceso: false, mensaje: 'No hay Token'});
     }
 });
@@ -45,17 +48,6 @@ let fs = require('fs');
 let https = require('https');
 app.use(expressSession({secret: 'abcdefg', resave: true, saveUninitialized: true}));
 
-// routerUsuarioSession
-let routerUsuarioSession = express.Router();
-routerUsuarioSession.use(function (req, res, next) {
-    console.log("routerUsuarioSession");
-    if (req.session.usuario) { // dejamos correr la petición
-        next();
-    } else {
-        console.log("va a : " + req.session.destino)
-        res.redirect("/identificarse");
-    }
-});
 app.use(express.static('public'));
 let bodyParser = require('body-parser');
 app.use(bodyParser.json());
@@ -64,6 +56,32 @@ let swig = require('swig');
 let mongo = require('mongodb');
 let gestorBD = require("./modules/gestorBD.js");
 gestorBD.init(app, mongo);
+
+// logger
+let log4js = require('log4js');
+log4js.configure({
+    appenders: {sdi: {type: 'file', filename: 'logs/sdi.log'}},
+    categories: {default: {appenders: ['sdi'], level: 'trace'}}
+});
+let logger = log4js.getLogger('sdi');
+app.set('logger', logger);
+// routerUsuarioSession
+let routerUsuarioSession = express.Router();
+routerUsuarioSession.use(function (req, res, next) {
+    if (req.session.usuario) {
+        // dejamos correr la petición
+        app.get('logger').info('Usuario puede acceder');
+        next();
+    } else {
+        app.get('logger').error('Intento de acceso sin autorizacion');
+        res.redirect("/identificarse");
+    }
+})
+app.use('/listFriends', routerUsuarioSession);
+app.use('/listUsers', routerUsuarioSession);
+app.use('/sendPetition/:email', routerUsuarioSession);
+app.use('/listFriendPetition', routerUsuarioSession);
+app.use('/acceptPetition/:email', routerUsuarioSession);
 let fileUpload = require('express-fileupload');
 app.use(fileUpload());
 let crypto = require('crypto');
@@ -85,11 +103,12 @@ app.get("/", function (req, res) {
     res.send(respuesta);
 });
 
-
+app.get('logger').info('Lanzando Servidor');
 //Lanzar el servidor
 https.createServer({
     key: fs.readFileSync('certificates/alice.key'),
     cert: fs.readFileSync('certificates/alice.crt')
 }, app).listen(app.get('port'), function () {
+    app.get('logger').info('Servidor Lanzado');
     console.log("Servidor activo");
 });
